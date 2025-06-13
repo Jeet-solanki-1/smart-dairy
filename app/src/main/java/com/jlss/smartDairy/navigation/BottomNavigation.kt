@@ -8,7 +8,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.jlss.smartDairy.data.model.Entry
 import com.jlss.smartDairy.screen.EntryListScreen
@@ -31,10 +36,14 @@ fun MainScaffold(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Smart Dairy") },
+               title =  { GradientAppName() },
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.ProfileScreen.route) }) {
                         Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
+                    }
+
+                    IconButton(onClick = { navController.navigate(Screen.UserGuideScreen.route) }) {
+                        Icon(Icons.Default.Info, contentDescription = "User Guide")
                     }
                 }
             )
@@ -120,3 +129,23 @@ fun EntryScreen() {
 //
 //}
 
+
+@Composable
+fun GradientAppName() {
+    Text(
+        text = "Smart Dairy",
+        fontSize = 26.sp, // Bigger text size
+        fontWeight = FontWeight.Bold, // Makes it stand out
+        style = TextStyle(
+            brush = Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFF000000),
+                    Color(0xFF51A4FC)
+
+
+                )
+            )
+        ),
+        modifier = Modifier
+    )
+}

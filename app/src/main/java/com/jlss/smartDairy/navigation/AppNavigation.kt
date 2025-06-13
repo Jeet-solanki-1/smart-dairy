@@ -15,7 +15,7 @@ import com.jlss.smartDairy.screen.*
     import com.jlss.smartDairy.viewmodel.AppLockViewModel
 import com.jlss.smartDairy.viewmodel.AppStateViewModel
 import com.jlss.smartDairy.viewmodel.SharedViewModel
-
+import com.jlss.smartDairy.screen.UserGuideScreen
 @RequiresApi(35)
     @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +92,9 @@ fun AppNavigation() {
         composable(Screen.ProfileScreen.route) {
             ProfileScreen(navController)
         }
-
+        composable(Screen.UserGuideScreen.route) {
+            UserGuideScreen(onBack = { navController.popBackStack() })
+        }
     }
 }
 

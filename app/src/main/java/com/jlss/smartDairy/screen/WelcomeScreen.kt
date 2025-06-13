@@ -56,8 +56,19 @@ fun WelcomeScreen(navigateToLoginScreen: () -> Unit = {}) {
     ) { padding ->
         val pages = listOf("Features", "How to Use", "About Developer")
         val descriptions = listOf(
-            "Manage milk entries by Voice based entry or type manually too, generate entries and autoCalculate amount to pay., export data and import via shareable files Free server less app.",
-            "Add providers as members and let entry table filled automatically initialized with members name just need to fill fat and milk quantity and all done, enter quantity, analyze payments.",
+            "- Real-time calculations: Total milk, avg fat, total payment.\n" +
+                    "- Voice recognition: Parse key-value speech, fuzzy name match, multi-language support.\n" +
+                    "- Persistent local storage: Room DB stores everything.\n" +
+                    "- Search & filter entries by date or shift.\n" +
+                    "- One-tap PDF export and share.\n" +
+                    "- Fully offline capable.\n" +
+                    "- Secure: PIN and biometric lock + auto draft save.",
+            "- Add members from the Members screen.\n" +
+                    "- Go to Add tab to enter milk data.\n" +
+                    "- Tap Save Entries to save.\n" +
+                    "- Use All tab to browse history.\n" +
+                    "- Tap a member to view their history.\n" +
+                    "- Unlock app using PIN or biometrics.",
             "Developed by `JLSS` : Jeet Laxman Sitaram Solanki  with ❤️ for local dairies to make a step towards digital india."
         )
 

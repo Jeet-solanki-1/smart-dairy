@@ -29,7 +29,7 @@ sealed class Screen(val route: String, val title: String? = null) {
 
     object WelcomeScreen : Screen("welcome_screen", "Welcome")
     object ProfileScreen : Screen("profile_screen", "profile")
-
+    object UserGuideScreen : Screen("user_guide_screen", "User Guide")
     object AccountCreationScreen : Screen("account_creation_screen","Create Account")
     object AppLockScreen : Screen("app_lock_screen","AppLockScreen")
 
