@@ -56,6 +56,13 @@ fun WelcomeScreen(navigateToLoginScreen: () -> Unit = {}) {
     ) { padding ->
         val pages = listOf("Features", "How to Use", "About Developer")
         val descriptions = listOf(
+
+            "- Add members from the Members screen.\n" +
+                    "- Go to Add tab to enter milk data.\n" +
+                    "- Tap Save Entries to save.\n" +
+                    "- Use All tab to browse history.\n" +
+                    "- Tap a member to view their history.\n" +
+                    "- Unlock app using PIN or biometrics.",
             "- Real-time calculations: Total milk, avg fat, total payment.\n" +
                     "- Voice recognition: Parse key-value speech, fuzzy name match, multi-language support.\n" +
                     "- Persistent local storage: Room DB stores everything.\n" +
@@ -63,12 +70,6 @@ fun WelcomeScreen(navigateToLoginScreen: () -> Unit = {}) {
                     "- One-tap PDF export and share.\n" +
                     "- Fully offline capable.\n" +
                     "- Secure: PIN and biometric lock + auto draft save.",
-            "- Add members from the Members screen.\n" +
-                    "- Go to Add tab to enter milk data.\n" +
-                    "- Tap Save Entries to save.\n" +
-                    "- Use All tab to browse history.\n" +
-                    "- Tap a member to view their history.\n" +
-                    "- Unlock app using PIN or biometrics.",
             "Developed by `JLSS` : Jeet Laxman Sitaram Solanki  with ❤️ for local dairies to make a step towards digital india."
         )
 

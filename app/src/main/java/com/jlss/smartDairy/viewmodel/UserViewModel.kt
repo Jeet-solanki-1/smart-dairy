@@ -18,7 +18,14 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
         emit(dao.getUser().firstOrNull())
     }
 
+
     fun saveUser(name: String, mobile: String, village: String) = viewModelScope.launch {
-        dao.insertUser(User(name = name, mobile = mobile, village = village))
+        val existingUser = dao.getUser().firstOrNull()
+        if (existingUser != null) {
+            dao.updateUser(existingUser.copy(name = name, mobile = mobile, village = village))
+        } else {
+            dao.insertUser(User(name = name, mobile = mobile, village = village))
+        }
     }
+
 }

@@ -21,6 +21,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalTime
 
+import java.util.Locale
 
 class EntryViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -187,43 +188,76 @@ class EntryViewModel(application: Application) : AndroidViewModel(application) {
 //        }
 //    }
 
+
+//    fun processSpeechInput(speech: String) {
+//        val cleaned = normalizeWordsToDigits(speech)
+//        val words = cleaned.trim().lowercase(Locale.getDefault()).split(" ")
+//
+//        val nameParts = mutableListOf<String>()
+//        var milk: String? = null
+//        var fat: String? = null
+//
+//        for (word in words) {
+//            val value = word.toDoubleOrNull()
+//            if (value == null) {
+//                // Word is not a number, assume part of name
+//                nameParts.add(word)
+//            } else {
+//                // First number = milk, second = fat
+//                if (milk == null) milk = word
+//                else if (fat == null) fat = word
+//            }
+//        }
+//
+//        val name = nameParts.joinToString(" ").trim()
+//        if (name.isBlank()) return // Name is required
+//
+//        val currentRows = _rows.value.toMutableList()
+//        val index = findBestMatchingIndex(name, currentRows)
+//
+//        if (index != -1) {
+//            val row = currentRows[index]
+//            val updatedRow = row.copy(
+//                fatRate = fat ?: row.fatRate,
+//                milkQty = milk ?: row.milkQty
+//            )
+//            setRow(index, updatedRow)
+//        } else {
+//            val newRow = EntryRowState(
+//                serialNo = currentRows.size + 1,
+//                name = name,
+//                fatRate = fat ?: "",
+//                milkQty = milk ?: ""
+//            )
+//            currentRows.add(newRow)
+//            _rows.value = currentRows
+//        }
+//    }
+
     fun processSpeechInput(speech: String) {
         val cleaned = normalizeWordsToDigits(speech)
-        val words = cleaned.trim().lowercase().split(" ")
-        val keys = setOf("name", "fat", "milk")
+        val parts = cleaned.trim().lowercase(Locale.getDefault()).split(",")
 
-        val data = mutableMapOf<String, String>()
-        var currentKey: String? = null
-        val currentValue = mutableListOf<String>()
+        val nameAndMilk = parts.getOrNull(0)?.split(" ") ?: return
+        val fat = parts.getOrNull(1)?.trim()
 
-        for (word in words) {
-            if (word in keys) {
-                if (currentKey != null && currentValue.isNotEmpty()) {
-                    data[currentKey] = currentValue.joinToString(" ")
-                    currentValue.clear()
-                }
-                currentKey = word
+        val nameParts = mutableListOf<String>()
+        var milk: String? = null
+
+        for (word in nameAndMilk) {
+            val value = word.toDoubleOrNull()
+            if (value == null) {
+                nameParts.add(word)
             } else {
-                if (currentKey != null) {
-                    currentValue.add(word)
-                }
+                milk = word
             }
         }
 
-        // Final key-value
-        if (currentKey != null && currentValue.isNotEmpty()) {
-            data[currentKey] = currentValue.joinToString(" ")
-        }
-
-        val name = data["name"] ?: return
-        val fat = data["fat"]
-        val milk = data["milk"]
+        val name = nameParts.joinToString(" ").trim()
+        if (name.isBlank()) return
 
         val currentRows = _rows.value.toMutableList()
-
-        // Improved fuzzy match (e.g., check if input name contains or matches row name)
         val index = findBestMatchingIndex(name, currentRows)
-
 
         if (index != -1) {
             val row = currentRows[index]
@@ -246,13 +280,19 @@ class EntryViewModel(application: Application) : AndroidViewModel(application) {
 
 
 
+
+
+
     fun normalizeWordsToDigits(text: String): String {
             val map = mapOf(
+                "coma" to ",","cama" to ",",
+                "dudh" to "milk","feet" to "fat","phat" to "fat",
+                "naam" to "name",
                 "zero" to "0", "shunya" to "0",
                 "one" to "1", "ek" to "1",
                 "two" to "2", "to" to "2", "do" to "2",
                 "three" to "3", "teen" to "3",
-                "four" to "4", "char" to "4",
+                "four" to "4", "char" to "4","for" to "4",
                 "five" to "5", "panch" to "5",
                 "six" to "6", "chhe" to "6",
                 "seven" to "7", "saat" to "7",
@@ -351,7 +391,7 @@ class EntryViewModel(application: Application) : AndroidViewModel(application) {
     fun saveAll() = viewModelScope.launch {
         val currentRatePerFat = fatDao.get().first()?.ratePerFat ?: return@launch
         val hour = LocalTime.now().hour
-        val isNight = hour < 6 || hour >= 18
+        val isNight = hour >= 12
 // Always include every row, defaulting missing fat/qty to 0.00
         val entryList = _rows.value.map { row ->
             val fat = row.fatRate.toDoubleOrNull() ?: 0.00

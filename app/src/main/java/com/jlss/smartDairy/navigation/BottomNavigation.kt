@@ -139,7 +139,7 @@ fun GradientAppName() {
         style = TextStyle(
             brush = Brush.linearGradient(
                 colors = listOf(
-                    Color(0xFF000000),
+                    Color(0xFF81FC96),
                     Color(0xFF51A4FC)
 
 

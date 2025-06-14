@@ -1,0 +1,193 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">स्मार्ट डेयरी</string>
+    <string name="profile">प्रोफ़ाइल</string>
+    <string name="user_guide">यूज़र गाइड</string>
+    <string name="home">होम</string>
+    <string name="add">जोड़ें</string>
+    <string name="all">सभी</string>
+    <string name="members">सदस्य</string>
+    <string name="entry_saved">एंट्री सहेजी गई!</string>
+    <string name="delete">हटाएं</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="create_account_title">अपना खाता बनाएं</string>
+    <string name="label_name">नाम</string>
+    <string name="label_mobile_number">मोबाइल नंबर</string>
+    <string name="label_app_lock_pin">ऐप लॉक पिन</string>
+    <string name="btn_create_account">खाता बनाएं</string>
+    <string name="pin_warning">नोट: पासवर्ड एक बार सेट किया जाता है। इसे पुनर्स्थापित नहीं किया जा सकता, कृपया इसे याद रखें।</string>
+
+    <string name="app_lock_prompt">अनलॉक करने के लिए पिन दर्ज करें</string>
+    <string name="pin_label">पिन</string>
+    <string name="unlock_button">अनलॉक करें</string>
+    <string name="pin_error">गलत पिन</string>
+    <string name="biometric_title">मुक़ेश डेयरी को अनलॉक करें</string>
+    <string name="biometric_subtitle">अपनी फिंगरप्रिंट या चेहरा उपयोग करें</string>
+    <string name="biometric_negative">पिन का उपयोग करें</string>
+    <string name="biometric_error_prefix">बायोमेट्रिक त्रुटि:</string>
+    <string name="biometric_failed">बायोमेट्रिक प्रमाणीकरण असफल</string>
+
+    <string name="search_by_date">तारीख से खोजें…</string>
+    <string name="filter">फ़िल्टर</string>
+    <string name="no_entries_found">आपके मानदंडों से कोई एंट्री नहीं मिली।</string>
+    <string name="night">रात</string>
+    <string name="morning">सुबह</string>
+    <string name="delete_entry">एंट्री हटाएं</string>
+    <string name="open">खोलें</string>
+    <string name="confirm_delete_entry">क्या आप वास्तव में इस एंट्री को हटाना चाहते हैं?</string>
+    <string name="ok">ठीक है</string>
+    <string name="filter_by_shift">शिफ्ट के अनुसार फ़िल्टर करें</string>
+    <string name="shift_all">सभी</string>
+
+    <!-- EntryScreen -->
+    <string name="voice_input">वॉइस इनपुट</string>
+    <string name="table_header_serial">#</string>
+    <string name="table_header_name">नाम</string>
+    <string name="table_header_milk">दूध</string>
+    <string name="table_header_fat">फैट</string>
+    <string name="table_header_amt">राशि</string>
+    <string name="btn_add_more">और जोड़ें</string>
+    <string name="label_total_milk">कुल दूध: %1$s</string>
+    <string name="label_avg_fat">औसत फैट: %1$.3f</string>
+    <string name="label_total_pay">कुल भुगतान: %1$.3f</string>
+    <string name="btn_save_entries">एंट्री सेव करें</string>
+
+    <!-- EntryViewScreen -->
+    <string name="title_view_entries">एंट्री देखें</string>
+    <string name="content_desc_pdf">PDF में प्रिंट करें</string>
+    <string name="label_milk_qty">दूध मात्रा: %1$.3f</string>
+    <string name="label_fat">फैट: %1$.3f</string>
+    <string name="label_amount">राशि: %1$.3f</string>
+
+    <!-- HomeScreen -->
+    <string name="current_rate">वर्तमान दर: %1$s ₹/फैट</string>
+    <string name="new_rate_label">नई दर</string>
+    <string name="btn_set_rate">दर सेट करें</string>
+
+    <string name="section_export_import">अपने ऐप डेटा को एक्सपोर्ट या इम्पोर्ट करें</string>
+    <string name="btn_export_entries">सभी एंट्री एक्सपोर्ट करें</string>
+
+    <string name="dialog_export_title">एंट्री एक्सपोर्ट करें</string>
+    <string name="dialog_enter_file_name">फाइल का नाम दर्ज करें</string>
+    <string name="btn_export">एक्सपोर्ट</string>
+    <string name="btn_cancel">रद्द करें</string>
+    <string name="toast_exported">%1$s.json के रूप में एक्सपोर्ट किया गया</string>
+
+    <string name="label_select_local_file">इम्पोर्ट के लिए लोकल फाइल चुनें:</string>
+    <string name="label_available_files">उपलब्ध फाइलें</string>
+    <string name="dropdown_select_file">फाइल चुनें</string>
+    <string name="btn_import_from_file">%1$s से इम्पोर्ट करें</string>
+    <string name="toast_imported">इम्पोर्ट किया गया: %1$s</string>
+    <string name="toast_file_empty">चुनी गई फाइल खाली है</string>
+
+    <!-- MemberDetailScreen -->
+    <string name="pdf_title">सदस्य रिपोर्ट</string>
+    <string name="pdf_date">तारीख</string>
+    <string name="pdf_name">नाम</string>
+    <string name="pdf_village">गांव</string>
+    <string name="pdf_mobile">मोबाइल</string>
+    <string name="pdf_table_name">नाम</string>
+    <string name="pdf_table_milk">दूध</string>
+    <string name="pdf_table_fat">फैट</string>
+    <string name="pdf_table_amt">राशि</string>
+    <string name="pdf_total_milk">कुल दूध</string>
+    <string name="pdf_avg_fat">औसत फैट</string>
+    <string name="pdf_total_pay">कुल भुगतान</string>
+    <string name="pdf_footer">स्मार्ट डेयरी द्वारा जनरेटेड</string>
+
+    <string name="desc_pdf_export">PDF में प्रिंट करें</string>
+    <string name="clear_history">इतिहास साफ़ करें</string>
+
+    <string name="label_qty">मात्रा: %.2f</string>
+    <string name="label_amt">राशि: %.2f</string>
+
+    <!-- MemberScreen -->
+    <string name="label_add_member">सदस्य जोड़ें</string>
+    <string name="btn_add">जोड़ें</string>
+    <string name="label_joined">%1$s को शामिल हुए</string>
+    <string name="desc_delete">हटाएं</string>
+    <string name="dialog_confirm_delete">क्या आप वास्तव में इस एंट्री को हटाना चाहते हैं?</string>
+
+    <!-- Profile screen -->
+    <string name="title_profile">प्रोफ़ाइल</string>
+    <string name="label_mobile">मोबाइल</string>
+    <string name="label_village">गांव</string>
+    <string name="btn_save">सहेजें</string>
+
+    <!-- UserGuideScreen -->
+    <string name="title_user_guide">यूज़र गाइड</string>
+    <string name="desc_back">वापस</string>
+
+    <string name="guide_title">स्मार्ट डेयरी</string>
+    <string name="guide_intro">
+    स्मार्ट डेयरी एक एंड्रॉइड ऐप है जो डेयरी किसानों और सहकारी समितियों के लिए दूध संग्रह और भुगतान की गणना को सरल बनाता है।
+    </string>
+
+    <string name="guide_section_description">विवरण</string>
+    <string name="guide_description">
+    - प्रतिदिन की एंट्री दर्ज करें: सदस्य सूची से नाम भरें, फिर दूध मात्रा और फैट डालें। राशि स्वचालित रूप से दर पर आधारित होगी।\n
+    - वॉइस एंट्री: "नाम जीत फैट 5.6 दूध 8" जैसे वाक्यों से डेटा भरें। हिंदी और अंग्रेज़ी दोनों में सपोर्ट।\n
+    - इतिहास देखें: हर दिन की रिपोर्ट समय के साथ सेव होती है। तारीख या शिफ्ट से फ़िल्टर करें।\n
+    - PDF रिपोर्ट: रिपोर्ट जनरेट और शेयर करें।\n
+    - सदस्य प्रबंधन: जोड़ें, हटाएं, देखें।\n
+    - सुरक्षा: पिन या बायोमेट्रिक से लॉक।\n
+    - ऑटो सेव ड्राफ्ट: डेटा लॉस से बचाव।
+    </string>
+
+    <string name="guide_section_features">विशेषताएँ</string>
+    <string name="guide_features">
+    - रीयल-टाइम कैलकुलेशन: कुल दूध, औसत फैट, कुल भुगतान।\n
+    - वॉइस रिकग्निशन: स्पीच को पहचानना, नाम मिलाना, मल्टी-लैंग्वेज सपोर्ट।\n
+    - लोकल स्टोरेज: सभी डेटा लोकली सेव होता है।\n
+    - तारीख और शिफ्ट से सर्च और फ़िल्टर।\n
+    - एक क्लिक में PDF एक्सपोर्ट और शेयर।\n
+    - पूरी तरह से ऑफ़लाइन काम करने वाला।\n
+    - सुरक्षित: पिन और बायोमेट्रिक लॉक।
+    </string>
+
+    <string name="guide_section_usage">उपयोग</string>
+    <string name="guide_usage">
+    - सदस्य स्क्रीन से सदस्य जोड़ें।\n
+    - जोड़ें टैब में जाकर दूध एंट्री भरें।\n
+    - सेव एंट्रीज़ टैप करें।\n
+    - सभी टैब से इतिहास ब्राउज़ करें।\n
+    - सदस्य के नाम पर टैप कर उसकी एंट्री देखें।\n
+    - पिन या बायोमेट्रिक से ऐप अनलॉक करें।
+    </string>
+
+    <string name="guide_footer">JLSS द्वारा संचालित</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome_title">स्मार्ट डेयरी प्रबंधन</string>
+    <string name="welcome_footer_powered_by">JLSS द्वारा संचालित</string>
+    <string name="welcome_footer_name">जीत लक्ष्मण सिताराम सोलंकी</string>
+    <string name="welcome_footer_tagline">अनोखापन की दुनिया</string>
+
+    <string name="welcome_page_title_features">विशेषताएँ</string>
+    <string name="welcome_page_title_usage">कैसे उपयोग करें</string>
+    <string name="welcome_page_title_about">डेवलपर के बारे में</string>
+
+    <string name="welcome_description_usage">
+    - सदस्य स्क्रीन से सदस्य जोड़ें।\n
+    - जोड़े टैब में जाकर दूध एंट्री भरें।\n
+    - सेव एंट्रीज़ टैप करें।\n
+    - सभी टैब से इतिहास ब्राउज़ करें।\n
+    - सदस्य पर टैप कर उसकी एंट्री देखें।\n
+    - पिन या बायोमेट्रिक से ऐप अनलॉक करें।
+    </string>
+
+    <string name="welcome_description_features">
+    - रीयल-टाइम कैलकुलेशन: कुल दूध, औसत फैट, कुल भुगतान।\n
+    - वॉइस रिकग्निशन: स्पीच को पहचानना, नाम मिलाना, मल्टी-लैंग्वेज सपोर्ट।\n
+    - लोकल स्टोरेज: सभी डेटा लोकली सेव होता है।\n
+    - तारीख और शिफ्ट से सर्च और फ़िल्टर।\n
+    - एक क्लिक में PDF एक्सपोर्ट और शेयर।\n
+    - पूरी तरह से ऑफ़लाइन काम करने वाला।\n
+    - सुरक्षित: पिन और बायोमेट्रिक लॉक।
+    </string>
+
+    <string name="welcome_description_about">
+    JLSS द्वारा विकसित: जीत लक्ष्मण सिताराम सोलंकी, स्थानीय डेयरियों के लिए डिजिटल इंडिया की ओर एक कदम।
+    </string>
+
+    <string name="welcome_get_started">शुरू करें</string>
+</resources>

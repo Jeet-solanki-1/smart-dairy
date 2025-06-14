@@ -9,13 +9,13 @@ import com.jlss.smartDairy.viewmodel.EntryRowState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore by preferencesDataStore("user_prefs")
+val Context.dataStore by preferencesDataStore("user_prefs")
 
 object PrefKeys {
     val ACCOUNT_CREATED = booleanPreferencesKey("account_created")
     val APP_LOCKED = booleanPreferencesKey("app_locked")
     val UNSAVED_ROWS = stringPreferencesKey("unsaved_rows")
-
+    val LANGUAGE = stringPreferencesKey("app_language")
 }
 
 class UserPreferences(private val context: Context) {
@@ -58,5 +58,21 @@ class UserPreferences(private val context: Context) {
             gson.fromJson(json, type)
         }
     }
+    // app language get set -- currently not using db just shared preferences based choice
+    suspend fun setAppLanguage(languageCode: String) {
+        context.dataStore.edit {
+            it[PrefKeys.LANGUAGE] = languageCode
+        }
+    }
+
+    val getAppLanguage: Flow<String> = context.dataStore.data
+        .map { it[PrefKeys.LANGUAGE] ?: "en" }
+
+    fun getAppLanguageSync(): String {
+        val preferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        return preferences.getString("app_language", "en") ?: "en"
+    }
+
+
 }
 

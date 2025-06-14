@@ -22,21 +22,18 @@ package com.jlss.smartDairy.navigation
  * - Provide a **structured and maintainable** navigation system.
  * - Ensure **scalability** by allowing easy addition of new screens.
  * - Avoid **string-based navigation errors** by using type-safe routes.
- */
-sealed class Screen(val route: String, val title: String? = null) {
+ */sealed class Screen(val route: String) {
 
+    object WelcomeScreen : Screen("welcome_screen")
+    object ProfileScreen : Screen("profile_screen")
+    object UserGuideScreen : Screen("user_guide_screen")
+    object AccountCreationScreen : Screen("account_creation_screen")
+    object AppLockScreen : Screen("app_lock_screen")
 
+    object MainScaffold : Screen("main_scaffold")
+    object EntryViewScreen : Screen("entry_view_screen")
 
-    object WelcomeScreen : Screen("welcome_screen", "Welcome")
-    object ProfileScreen : Screen("profile_screen", "profile")
-    object UserGuideScreen : Screen("user_guide_screen", "User Guide")
-    object AccountCreationScreen : Screen("account_creation_screen","Create Account")
-    object AppLockScreen : Screen("app_lock_screen","AppLockScreen")
-
-    object MainScaffold  : Screen("main_scaffold","main Screen")
-    object EntryViewScreen : Screen("entry_view_screen", "View Entry")
-    object MemberDetail  : Screen("member_detail/{memberId}") {
+    object MemberDetail : Screen("member_detail/{memberId}") {
         fun createRoute(id: Long) = "member_detail/$id"
     }
-
 }

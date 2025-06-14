@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.jlss.smartDairy.component.ConfirmDeleteDialog
 import com.jlss.smartDairy.navigation.Screen
 import com.jlss.smartDairy.viewmodel.MemberViewModel
 import java.text.SimpleDateFormat
@@ -27,7 +28,7 @@ fun MemberScreen(
     val list by vm.members.collectAsState()
     var name by remember { mutableStateOf("") }
     val dateFmt = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
-
+    var showDialog by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         OutlinedTextField(
             value = name, onValueChange = { name = it },
@@ -67,12 +68,27 @@ fun MemberScreen(
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
-                        IconButton(onClick = { vm.remove(m) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        IconButton(onClick = { showDialog=true }) {
+
+                                Icon(Icons.Default.Delete, contentDescription = "remove")
+
                         }
                     }
                 }
+                if (showDialog) {
+                    ConfirmDeleteDialog(
+                        message = "Do you really want to delete this entry?",
+                        onConfirm = {
+                            vm.remove(m)// your delete logic
+                            showDialog = false
+                        },
+                        onDismiss = { showDialog = false }
+                    )
+                }
             }
+
+
         }
+
     }
 }

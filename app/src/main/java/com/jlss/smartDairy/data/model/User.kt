@@ -60,3 +60,11 @@ data class FatRate(
     @PrimaryKey val id: Int = 0,   // always 0 so there’s only one row
     val ratePerFat: Double
 )
+
+
+
+
+data class DataExportModel(
+    val entries: List<ListOfEntry>,
+    val members: List<Members>
+)

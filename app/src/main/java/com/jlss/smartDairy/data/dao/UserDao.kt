@@ -20,6 +20,9 @@ interface UserDao {
 
     @Query("SELECT * FROM user LIMIT 1")
     fun getUser(): Flow<User?>
+
+    @Update
+    suspend fun updateUser(user: User)
 }
 
 
@@ -57,6 +60,8 @@ interface MemberDao {
     // New: clear that member’s history
     @Query("UPDATE members SET history = '' WHERE id = :memberId")
     suspend fun clearHistory(memberId: Long)
+    @Query("SELECT * FROM members ORDER BY name")
+    suspend fun getAllOnce(): List<Members>
 
 }
 
@@ -78,14 +83,17 @@ interface FatRateDao {
 }
 
 
-
-
 @Dao
 interface EntryDao {
     @Insert
     suspend fun insert(e: Entry)
+
+    @Insert
+    suspend fun insertAll(entries: List<Entry>)  // ← Needed for import
+
     @Query("SELECT * FROM entry ORDER BY timestamp DESC")
-    fun all(): Flow<List<Entry>>
+    suspend fun getAll(): List<Entry>
+
     @Query("SELECT * FROM entry WHERE isNight = :night ORDER BY timestamp DESC")
     fun byShift(night: Boolean): Flow<List<Entry>>
 }
@@ -96,7 +104,8 @@ interface EntryDao {
 interface ListEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(list: ListOfEntry)
-
+    @Query("SELECT * FROM list_of_entry")
+    suspend fun getAllOnce(): List<ListOfEntry> // ✅ Rename to avoid conflict with Flow version
     @Query("SELECT * FROM list_of_entry ORDER BY timestamp DESC")
     fun getAll(): Flow<List<ListOfEntry>>
 
@@ -105,4 +114,6 @@ interface ListEntryDao {
 
     @Delete
     suspend fun delete(list: ListOfEntry) // ✅ Add this
+    @Insert
+    suspend fun insertAll(entries: List<ListOfEntry>)  // ← Needed for import
 }

@@ -16,6 +16,7 @@ class AppLockViewModel(
     private val _pin = MutableStateFlow("")
     val pin: StateFlow<String> get() = _pin
 
+
     private val _isUnlocked = MutableStateFlow(false)
     val isUnlocked: StateFlow<Boolean> get() = _isUnlocked
 

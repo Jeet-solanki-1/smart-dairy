@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class PdfViewModel(app: Application) : AndroidViewModel(app) {
     private val ctx = app.applicationContext
@@ -23,70 +26,77 @@ class PdfViewModel(app: Application) : AndroidViewModel(app) {
     private val userDao = db.userDao()
 
     fun generateReportPdf(entries: List<Entry>) = viewModelScope.launch(Dispatchers.IO) {
-        // --- 1. load user info ---
         val user: User? = userDao.getUser().first()
 
-        // --- 2. page setup ---
-        val pageWidth  = 595   // A4 @ 72dpi
+        val pageWidth = 595
         val pageHeight = 842
-        val pdf   = PdfDocument()
+        val pdf = PdfDocument()
         val paint = Paint().apply { textSize = 12f }
         var y = 40f
 
-        // --- 3. start first page ---
         val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
-        val page     = pdf.startPage(pageInfo)
-        val canvas   = page.canvas
+        val page = pdf.startPage(pageInfo)
+        val canvas = page.canvas
 
-        // --- 4. header: app title + user info ---
+        val dateFormat = SimpleDateFormat("EEE d MMM yyyy | h:mm a", Locale.getDefault())
+        val formattedDateTime = dateFormat.format(Date())
+            .replace("AM", "Morning")
+            .replace("PM", "Evening")
+
         canvas.drawText("Smart Dairy Report", 40f, y, paint)
         y += 20f
+        canvas.drawText("Date: $formattedDateTime", 40f, y, paint)
+        y += 20f
         user?.let {
-            canvas.drawText("Name: ${it.name}",     40f, y, paint)
+            canvas.drawText("Name: ${it.name}", 40f, y, paint)
             canvas.drawText("Village: ${it.village}", 200f, y, paint)
-            canvas.drawText("Mobile: ${it.mobile}",   400f, y, paint)
+            canvas.drawText("Mobile: ${it.mobile}", 400f, y, paint)
             y += 20f
         }
-        // separator
+
         canvas.drawLine(40f, y, pageWidth - 40f, y, paint)
         y += 20f
 
-        // --- 5. table header ---
-        canvas.drawText("Name",   40f,  y, paint)
-        canvas.drawText("Milk",  200f,  y, paint)
-        canvas.drawText("Fat",   300f,  y, paint)
-        canvas.drawText("Amt",   400f,  y, paint)
+        // Table Header
+        canvas.drawText("S.No",  40f, y, paint)
+        canvas.drawText("Name",  80f, y, paint)
+        canvas.drawText("Milk",  220f, y, paint)
+        canvas.drawText("Fat",   300f, y, paint)
+        canvas.drawText("Amt",   380f, y, paint)
         y += 20f
         canvas.drawLine(40f, y, pageWidth - 40f, y, paint)
         y += 20f
 
-        // --- 6. table rows ---
+        // Table Rows
+        var count = 1
         entries.forEach { e ->
-            canvas.drawText(e.name,                  40f,  y, paint)
-            canvas.drawText("%.2f".format(e.milkQty), 200f,  y, paint)
-            canvas.drawText("%.2f".format(e.fat),     300f,  y, paint)
-            canvas.drawText("%.2f".format(e.amountToPay), 400f, y, paint)
+            canvas.drawText("${count++}",           40f, y, paint)
+            canvas.drawText(e.name,                80f, y, paint)
+            canvas.drawText("%.2f".format(e.milkQty), 220f, y, paint)
+            canvas.drawText("%.2f".format(e.fat),     300f, y, paint)
+            canvas.drawText("%.2f".format(e.amountToPay), 380f, y, paint)
             y += 20f
+
             if (y > pageHeight - 120) {
                 pdf.finishPage(page)
-                // start a new page if needed (omitted for brevity)…
+                // Optional: add code to start a new page if needed.
             }
         }
 
-        // --- 7. totals ---
+        // Totals
         y = pageHeight - 100f
         val totalMilk = entries.sumOf { it.milkQty }
-        val avgFat    = entries.map { it.fat }.average().takeIf { !it.isNaN() } ?: 0.0
-        val totalAmt  = entries.sumOf { it.amountToPay }
-        canvas.drawText("Total Milk: %.2f".format(totalMilk),  40f, y, paint)
-        canvas.drawText("Avg Fat:   %.2f".format(avgFat),     200f, y, paint)
-        canvas.drawText("Total Pay: %.2f".format(totalAmt),   340f, y, paint)
+        val avgFat = entries.map { it.fat }.average().takeIf { !it.isNaN() } ?: 0.0
+        val totalAmt = entries.sumOf { it.amountToPay }
 
-        // --- 8. footer ---
+        canvas.drawText("Total Milk: %.2f".format(totalMilk), 40f, y, paint)
+        canvas.drawText("Avg Fat:   %.2f".format(avgFat), 200f, y, paint)
+        canvas.drawText("Total Pay: %.2f".format(totalAmt), 340f, y, paint)
+
+        // Footer
         y += 40f
         canvas.drawText("Powered by JLSS", 40f, y, paint)
 
-        // --- 9. finish page, write & share ---
         pdf.finishPage(page)
         val pdfFile = File(ctx.getExternalFilesDir(null), "report-${System.currentTimeMillis()}.pdf")
         pdf.writeTo(FileOutputStream(pdfFile))

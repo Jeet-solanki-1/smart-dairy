@@ -30,11 +30,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.jlss.smartDairy.component.ConfirmDeleteDialog
 import com.jlss.smartDairy.data.model.Entry
 import com.jlss.smartDairy.viewmodel.MemberViewModel
 import com.jlss.smartDairy.viewmodel.PdfViewModel
@@ -52,7 +56,7 @@ fun MemberDetailScreen(
 ) {
     val member by vm.selected.collectAsState()
     LaunchedEffect(memberId) { vm.findById(memberId) }
-
+    var showDialog by remember { mutableStateOf(false) }
     member?.let { m ->
         // 1) Convert nullable history to a non-null list
         val entries: List<Entry> = m.history
@@ -79,7 +83,7 @@ fun MemberDetailScreen(
                         }) {
                             Icon(Icons.Default.Send, contentDescription = "Print to PDF")
                         }
-                        IconButton(onClick = { vm.clearHistory(memberId) }) {
+                        IconButton(onClick = { showDialog=true }) {
                             Icon(Icons.Default.Delete, contentDescription = "Clear History")
                         }
                     }
@@ -127,6 +131,17 @@ fun MemberDetailScreen(
                 Text("Total Milk: %.2f".format(totalMilk))
                 Text("Avg Fat:   %.2f".format(avgFat))
                 Text("Total Pay: %.2f".format(totalPay))
+                // dialog to delet confirm
+                if (showDialog) {
+                    ConfirmDeleteDialog(
+                        message = "Do you really want to delete this entry?",
+                        onConfirm = {
+                           vm.clearHistory(memberId)// your delete logic
+                            showDialog = false
+                        },
+                        onDismiss = { showDialog = false }
+                    )
+                }
             }
         }
 

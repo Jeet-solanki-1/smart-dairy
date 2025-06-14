@@ -29,6 +29,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import com.jlss.smartDairy.viewmodel.MemberViewModel
 import com.jlss.smartDairy.viewmodel.PdfViewModel
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 
 @Composable
@@ -38,7 +40,8 @@ fun EntryScreen(
     onSaved: () -> Unit
 ) {
     val members by memberVm.members.collectAsState()
-
+    var showFatRateDialog by remember { mutableStateOf(false) }
+    var showNoMembersDialog by remember { mutableStateOf(false) }
     val rows by vm.rows.collectAsState()
     // Call only once when rows are empty
     LaunchedEffect(members) {
@@ -47,10 +50,40 @@ fun EntryScreen(
             vm.initRowsFromMembers(members)
         }
     }
+
+    LaunchedEffect(members) {
+        if (members.isEmpty()) {
+            showNoMembersDialog = true
+        }
+    }
     val totalMilk by vm.totalMilk.collectAsState()
     val avgFat by vm.avgFat.collectAsState()
     val totalAmt by vm.totalAmount.collectAsState()
 
+    if (showNoMembersDialog) {
+        AlertDialog(
+            onDismissRequest = { showNoMembersDialog = false },
+            title = { Text("No Members Found") },
+            text = { Text("Please add members first. OtherWise the diary will not creates for the entries you are gonna add. The members section is for you to add all your milk providers , so that their daily data will store there ") },
+            confirmButton = {
+                TextButton(onClick = { showNoMembersDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    if (showFatRateDialog) {
+        AlertDialog(
+            onDismissRequest = { showFatRateDialog = false },
+            title = { Text("Fat Rate Not Set") },
+            text = { Text("Fat rate is not set. Amount calculation will not work until it's set in Home.") },
+            confirmButton = {
+                TextButton(onClick = { showFatRateDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         VoiceInputButton(vm)
         Spacer(Modifier.height(8.dp))
