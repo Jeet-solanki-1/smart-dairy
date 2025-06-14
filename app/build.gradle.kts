@@ -95,6 +95,9 @@ dependencies {
     // Biometric Prompt
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
 
+        implementation("androidx.compose.material:material-icons-extended")
+    
+
 
     implementation("com.google.code.gson:gson:2.10.1")
 }

@@ -1,5 +1,6 @@
 package com.jlss.smartDairy.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -33,76 +34,140 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 
 
+
+import androidx.compose.material.icons.filled.Add
+
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.ui.platform.LocalContext
+import com.jlss.smartDairy.data.AppDatabase
+import com.jlss.smartDairy.navigation.Screen
+
+
 @Composable
 fun EntryScreen(
     vm: EntryViewModel = viewModel(),
     memberVm: MemberViewModel = viewModel(),
-    onSaved: () -> Unit
+    onSaved: () -> Unit,
+    navController: NavController
 ) {
     val members by memberVm.members.collectAsState()
-    var showFatRateDialog by remember { mutableStateOf(false) }
-    var showNoMembersDialog by remember { mutableStateOf(false) }
     val rows by vm.rows.collectAsState()
-    // Call only once when rows are empty
-    LaunchedEffect(members) {
-        // ONLY initialize when rows is still empty and members have arrived
-        if (members.isNotEmpty() && rows.isEmpty()) {
-            vm.initRowsFromMembers(members)
-        }
-    }
-
-    LaunchedEffect(members) {
-        if (members.isEmpty()) {
-            showNoMembersDialog = true
-        }
-    }
     val totalMilk by vm.totalMilk.collectAsState()
     val avgFat by vm.avgFat.collectAsState()
     val totalAmt by vm.totalAmount.collectAsState()
+    var showFatRateDialog by remember { mutableStateOf(false) }
+    var showSaveConfirm by remember { mutableStateOf(false) }
+    var showNoMembersDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val rate = mutableStateOf(0.0)
+
+
+    LaunchedEffect(Unit) {
+          vm.refreshFatRate()
+     if (vm.ratePerFat.value ==null){
+         showFatRateDialog = true
+     }
+
+    }
+    if (showFatRateDialog) {
+        // Show dialog or directly navigate to HomeScreen
+        AlertDialog(
+            onDismissRequest = { showFatRateDialog = false },
+            title = { Text("Fat Rate not Set!!") },
+            text = { Text("Set fat rate first from home screen to calculate amounts.") },
+            confirmButton = { TextButton(onClick = {
+                navController.navigate(Screen.HomeScreen.route) // replace with actual route
+            }
+            ) { Text("Go") }
+            })
+    }
 
     if (showNoMembersDialog) {
         AlertDialog(
             onDismissRequest = { showNoMembersDialog = false },
             title = { Text("No Members Found") },
-            text = { Text("Please add members first. OtherWise the diary will not creates for the entries you are gonna add. The members section is for you to add all your milk providers , so that their daily data will store there ") },
+            text = { Text("Please add members first. The members section is needed to map entries correctly.") },
+            confirmButton = { TextButton(onClick = {
+                showNoMembersDialog = false
+
+            }
+            ) { Text("OK") }
+            }
+        )
+    }
+    if (showSaveConfirm) {
+        AlertDialog(
+            onDismissRequest = { showSaveConfirm = false },
+            title = { Text("Save") },
+            text = { Text("Always make sure you filled all entries of the shift to prevent data loss.") },
             confirmButton = {
-                TextButton(onClick = { showNoMembersDialog = false }) {
-                    Text("OK")
+                TextButton(onClick = {
+                    showSaveConfirm = false
+                    vm.saveAll()
+                    onSaved()
+                }) {
+                    Text("Yes")
                 }
             }
         )
     }
+
+
     if (showFatRateDialog) {
         AlertDialog(
             onDismissRequest = { showFatRateDialog = false },
             title = { Text("Fat Rate Not Set") },
-            text = { Text("Fat rate is not set. Amount calculation will not work until it's set in Home.") },
-            confirmButton = {
-                TextButton(onClick = { showFatRateDialog = false }) {
-                    Text("OK")
-                }
-            }
+            text = { Text("Go to home screen and set current fat rate!") },
+            confirmButton = { TextButton(onClick = { navController.navigate(Screen.HomeScreen.route) }) { Text("Ok") } }
         )
     }
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        VoiceInputButton(vm)
-        Spacer(Modifier.height(8.dp))
-        LazyColumn(Modifier.weight(1f)) {
-            item {
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    listOf("#", "Name", "Milk", "Fat", "Amt").forEachIndexed { i, header ->
-                        val weight = if (i == 0) 0.5f else 1f
-                        Text(header, Modifier.weight(weight), style = MaterialTheme.typography.labelLarge)
-                    }
 
+    Scaffold(
+        bottomBar = {
+            Column(Modifier.fillMaxWidth().padding(8.dp)) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Milk: $totalMilk", style = MaterialTheme.typography.bodyMedium)
+                    Text("Fat: ${"%.2f".format(avgFat)}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Pay: ₹${"%.2f".format(totalAmt)}", style = MaterialTheme.typography.bodyMedium)
                 }
-                Divider()
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    IconButton(onClick = { vm.addEmptyRow() }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Row")
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        showSaveConfirm = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("💾 Save Entries")
+                }
             }
-            itemsIndexed(rows) { idx, row ->
-                EntryRow(
-                    index = idx,
-                    row = row,
-                    onRowChange = { index, changedRow ->
+        }
+    ) { padding ->
+        Column(Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
+            LazyColumn(Modifier.weight(1f)) {
+                item {
+                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                        listOf("#", "Name", "Milk", "Fat", "Amt").forEachIndexed { i, header ->
+                            val weight = if (i == 0) 0.5f else 1f
+                            Text(header, Modifier.weight(weight), style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
+                    Divider()
+                }
+                itemsIndexed(rows) { idx, row ->
+                    EntryRow(index = idx, row = row, onRowChange = { index, changedRow ->
                         vm.updateRow(index) {
                             copy(
                                 name = changedRow.name,
@@ -110,37 +175,14 @@ fun EntryScreen(
                                 fatRate = changedRow.fatRate
                             )
                         }
-                    }
-
-
-                )
-                Divider()
+                    })
+                    Divider()
+                }
             }
         }
-
-
-
-        Spacer(Modifier.height(8.dp))
-
-        Button(onClick = vm::addEmptyRow) { Text("Add More") }
-
-        Spacer(Modifier.height(16.dp))
-
-        Text("Total Milk: $totalMilk", style = MaterialTheme.typography.bodyMedium)
-        Text("Avg Fat: ${"%.3f".format(avgFat)}", style = MaterialTheme.typography.bodyMedium)
-        Text("Total Pay: ${"%.3f".format(totalAmt)}", style = MaterialTheme.typography.bodyMedium)
-
-        Spacer(Modifier.height(16.dp))
-
-        Button(onClick = {
-            vm.saveAll()
-            onSaved()
-        }, Modifier.fillMaxWidth()) {
-            Text("Save Entries")
-        }
-
     }
 }
+
 
 
 @Composable

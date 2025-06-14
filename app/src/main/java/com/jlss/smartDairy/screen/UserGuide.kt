@@ -1,21 +1,17 @@
 package com.jlss.smartDairy.screen
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,65 +29,85 @@ fun UserGuideScreen(onBack: () -> Unit) {
         }
     ) { padding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .padding(padding)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
+            // App Title
             Text(
-                text = "Smart Dairy",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Text(
-                text = "Smart Dairy is an Android application designed to streamline daily milk collection and payment calculations for dairy farmers and cooperative societies. With an intuitive table-based data entry system, voice-assisted input, persistent storage, and secure access, Smart Dairy makes recording, managing, and reviewing milk entries simple and efficient.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+                text = "📋 Smart Dairy",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
             )
 
-            Text("Description", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+
             Text(
-                text = "- Record daily milk entries: Pre-populate rows for each registered member, then fill in fat percentage and milk quantity. Calculations for amount to pay are automatic based on a configurable fat rate.\n" +
-                        "- Voice-assisted data entry: Use natural speech like 'name Jeet solanki fat 5.6 milk 8' to fill fields. Supports English and Hindi.\n" +
-                        "- Historical records: Save each day's entries as timestamped reports. Browse and filter by date or shift.\n" +
-                        "- PDF reporting: Generate and share PDFs of entries with totals and headers.\n" +
-                        "- Member management: Add/edit/delete members. View individual histories.\n" +
-                        "- Security: PIN or biometric unlock.\n" +
-                        "- Auto-save drafts: Prevent data loss on accidental closure.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = 8.dp)
+                text = "Smart Dairy is a modern, offline-first Android application designed to streamline daily milk collection and payment workflows for farmers and cooperatives. With voice control, rich table entry, and robust storage, it makes managing dairy operations elegant and effortless.",
+                style = MaterialTheme.typography.bodyLarge
             )
 
-            Text("Features", style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "- Real-time calculations: Total milk, avg fat, total payment.\n" +
-                        "- Voice recognition: Parse key-value speech, fuzzy name match, multi-language support.\n" +
-                        "- Persistent local storage: Room DB stores everything.\n" +
-                        "- Search & filter entries by date or shift.\n" +
-                        "- One-tap PDF export and share.\n" +
-                        "- Fully offline capable.\n" +
-                        "- Secure: PIN and biometric lock + auto draft save.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = 8.dp)
+            Spacer(Modifier.height(24.dp))
+            SectionTitle("🔍 Description")
+            SectionBody(
+                "- Record daily milk entries with automatic amount calculation using fat rate.\n" +
+                        "- Voice-assisted input like: 'Jeet Solanki fat 6.5 milk 10'. Supports English & Hindi.\n" +
+                        "- Save entries as reports with timestamps and view history by date or shift.\n" +
+                        "- Auto PDF generation and secure sharing.\n" +
+                        "- Member management with individual record histories.\n" +
+                        "- Security via PIN or biometric lock.\n" +
+                        "- Auto draft-save prevents data loss."
             )
 
-
-            Text("Usage", style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "- Add members from the Members screen.\n" +
-                        "- Go to Add tab to enter milk data.\n" +
-                        "- Tap Save Entries to save.\n" +
-                        "- Use All tab to browse history.\n" +
-                        "- Tap a member to view their history.\n" +
-                        "- Unlock app using PIN or biometrics.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = 8.dp)
+            Spacer(Modifier.height(16.dp))
+            SectionTitle("✨ Features")
+            SectionBody(
+                "- Real-time milk/fat/pay calculations.\n" +
+                        "- AI-enhanced fuzzy name recognition in voice input.\n" +
+                        "- Fully offline with Room DB.\n" +
+                        "- Entry search, filtering (morning/night).\n" +
+                        "- Elegant Compose UI.\n" +
+                        "- Multi-language support.\n" +
+                        "- Export & import entries easily."
             )
 
+            Spacer(Modifier.height(16.dp))
+            SectionTitle("🚀 Getting Started")
+            SectionBody(
+                "- Add your milk providers in the Member tab first.\n" +
+                        "- Use the 'Add' tab daily to fill entries.\n" +
+                        "- Tap 'Save Entries' to store securely.\n" +
+                        "- View past records in the 'All' tab.\n" +
+                        "- Tap member name to view their full history.\n" +
+                        "- Enable app lock from Settings for protection."
+            )
+
+            Spacer(Modifier.height(32.dp))
             Text(
-                text = "Powered by JLSS",
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(top = 16.dp)
+                text = "Built with 💛 by JLSS",
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = 14.sp),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }
+}
+
+// Helper composables for consistent styling
+@Composable
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+}
+
+@Composable
+fun SectionBody(content: String) {
+    Text(
+        text = content,
+        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+        modifier = Modifier.padding(start = 8.dp)
+    )
 }

@@ -95,7 +95,10 @@ class PdfViewModel(app: Application) : AndroidViewModel(app) {
 
         // Footer
         y += 40f
-        canvas.drawText("Powered by JLSS", 40f, y, paint)
+        val footerText = "Powered by JLSS"
+        val textWidth = paint.measureText(footerText)
+        val centeredX = (pageWidth - textWidth) / 2
+        canvas.drawText(footerText, centeredX, y, paint)
 
         pdf.finishPage(page)
         val pdfFile = File(ctx.getExternalFilesDir(null), "report-${System.currentTimeMillis()}.pdf")

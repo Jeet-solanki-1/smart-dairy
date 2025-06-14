@@ -6,6 +6,8 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.RecognitionListener
 import android.widget.Toast
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -16,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.jlss.smartDairy.viewmodel.EntryViewModel
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 
 @Composable
@@ -67,6 +71,8 @@ fun VoiceInputButton(vm: EntryViewModel) {
             isListening = true
         }
     }) {
-        Text(if (isListening) "Listening..." else "Voice Fill")
+        IconButton(onClick = { }) {
+            Icon(Icons.Default.Mic, contentDescription = "Voice Input")
+        }
     }
 }

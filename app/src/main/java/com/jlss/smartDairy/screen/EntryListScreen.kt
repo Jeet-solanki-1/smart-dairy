@@ -182,6 +182,11 @@ import com.jlss.smartDairy.viewmodel.FilterType
 
 import java.util.*
 
+
+
+import androidx.compose.material.icons.filled.FilterList
+import com.jlss.smartDairy.data.model.ListOfEntry
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryListScreen(
@@ -190,112 +195,140 @@ fun EntryListScreen(
     vm: EntryListViewModel = viewModel()
 ) {
     val entries by vm.filteredEntries.collectAsState()
+    val searchQuery by vm.searchQuery.collectAsState()
+    val selectedFilter by vm.filterType.collectAsState()
+
     var showFilterDialog by remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(false) }
+    var deleteCandidate by remember { mutableStateOf<ListOfEntry?>(null) }
 
-    // date formatter
-    val displayFmt = remember { SimpleDateFormat("EEE d MMM yyyy | h:mm a", Locale.getDefault()) }// t is day like sunday ,monday
+    val formatter = remember {
+        SimpleDateFormat("EEE, d MMM yyyy | h:mm a", Locale.getDefault())
+    }
 
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextField(
-                value = vm.searchQuery.collectAsState().value,
+    Column(Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
+
+        // 🔍 Search and Filter Row
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
                 onValueChange = vm::setSearch,
-                placeholder = { Text("Search by date…") },
+                label = { Text("Search by Date") },
                 modifier = Modifier.weight(1f)
             )
             IconButton(onClick = { showFilterDialog = true }) {
-                Icon(Icons.Default.List, contentDescription = "Filter")
+                Icon(Icons.Default.FilterList, contentDescription = "Filter by Shift")
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
 
         if (entries.isEmpty()) {
-            Text("No saved entry-lists match your criteria.", style = MaterialTheme.typography.bodyMedium)
-        }
-
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            items(entries) { item ->
-                val color = if (item.isNight)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.secondary
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = color)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        val label = displayFmt.format(Date(item.timestamp))
-                        Text(
-                            "$label | ${if (item.isNight) "Night" else "Morning"}",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp)
-                        )
-
-                        IconButton(onClick = {
-                         showDialog=true
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete Entry")
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            sharedVm.selectedEntries = item.listOfEntry
+            Text(
+                "No entries found for the current filter.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(entries) { entry ->
+                    EntryCard(
+                        entryGroup = entry,
+                        formatter = formatter,
+                        onOpen = {
+                            sharedVm.selectedEntries = entry.listOfEntry
                             navController.navigate(Screen.EntryViewScreen.route)
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text("Open")
-                    }
-                }
-                if (showDialog) {
-                    ConfirmDeleteDialog(
-                        message = "Do you really want to delete this entry?",
-                        onConfirm = {
-                            vm.deleteEntry(item)
-                            showDialog = false
-                        },
-                        onDismiss = { showDialog = false }
+                        onDelete = { deleteCandidate = entry }
                     )
                 }
             }
         }
-
     }
 
+    // 🧾 Filter Dialog
     if (showFilterDialog) {
         AlertDialog(
             onDismissRequest = { showFilterDialog = false },
             confirmButton = {
                 TextButton(onClick = { showFilterDialog = false }) {
-                    Text("OK")
+                    Text("Close")
                 }
             },
-            title = { Text("Filter by Shift") },
+            title = { Text("Filter Entries") },
             text = {
                 Column {
-                    FilterType.values().forEach { ft ->
-                        Row(Modifier.fillMaxWidth().padding(4.dp)) {
+                    FilterType.values().forEach { filter ->
+                        Row(Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)) {
                             RadioButton(
-                                selected = vm.filterType.collectAsState().value == ft,
-                                onClick = { vm.setFilter(ft) }
+                                selected = selectedFilter == filter,
+                                onClick = { vm.setFilter(filter) }
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(ft.name.lowercase().replaceFirstChar { it.uppercase() })
+                            Text(filter.name.lowercase().replaceFirstChar { it.uppercase() })
                         }
                     }
                 }
             }
         )
+    }
+
+    // ❌ Delete Dialog
+    deleteCandidate?.let { entryToDelete ->
+        ConfirmDeleteDialog(
+            message = "Delete this entry session from ${formatter.format(Date(entryToDelete.timestamp))}?",
+            onConfirm = {
+                vm.deleteEntry(entryToDelete)
+                deleteCandidate = null
+            },
+            onDismiss = { deleteCandidate = null }
+        )
+    }
+}
+
+@Composable
+private fun EntryCard(
+    entryGroup: ListOfEntry,
+    formatter: SimpleDateFormat,
+    onOpen: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val shiftText = if (entryGroup.isNight) "Night" else "Morning"
+    val label = formatter.format(Date(entryGroup.timestamp))
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (entryGroup.isNight)
+                MaterialTheme.colorScheme.secondaryContainer
+            else
+                MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    "$label | $shiftText",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = onOpen,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Open Entry List")
+            }
+        }
     }
 }

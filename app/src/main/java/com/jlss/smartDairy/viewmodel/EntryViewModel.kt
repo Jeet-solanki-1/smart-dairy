@@ -31,12 +31,16 @@ class EntryViewModel(application: Application) : AndroidViewModel(application) {
     private val fatDao = db.fatRateDao()
 
 
-    private val ratePerFat = MutableStateFlow(0.0)
+     val ratePerFat = MutableStateFlow(0.0)
     val totalMilk = MutableStateFlow(0.0)
     val avgFat = MutableStateFlow(0.0)
     val totalAmount = MutableStateFlow(0.0)
 
     val userPrefs = UserPreferences(application.applicationContext)
+
+    suspend fun refreshFatRate() {
+        ratePerFat.value = fatDao.get().firstOrNull()?.ratePerFat ?: 0.0
+    }
 
     /**
      * Editable table rows
@@ -68,10 +72,7 @@ class EntryViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        viewModelScope.launch {
-            // Step 2: Get rate per fat once
-            ratePerFat.value = fatDao.get().firstOrNull()?.ratePerFat ?: 0.0
-        }
+
 
         viewModelScope.launch {
             // Step 3: Update totals on row change

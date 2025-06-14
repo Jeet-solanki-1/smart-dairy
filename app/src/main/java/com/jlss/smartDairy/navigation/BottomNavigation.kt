@@ -84,7 +84,8 @@ fun MainScaffold(
                 1 -> EntryScreen(onSaved = {
                     // Example: show a Toast or navigate
                     Toast.makeText(context, "Entry Saved!", Toast.LENGTH_SHORT).show()
-                })
+                },
+                    navController = navController)
                 2 -> EntryListScreen(
                     navController = navController,
                     sharedVm = sharedVm

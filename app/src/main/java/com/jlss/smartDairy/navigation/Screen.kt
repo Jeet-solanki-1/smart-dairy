@@ -32,7 +32,7 @@ package com.jlss.smartDairy.navigation
 
     object MainScaffold : Screen("main_scaffold")
     object EntryViewScreen : Screen("entry_view_screen")
-
+    object HomeScreen : Screen("home_screen")
     object MemberDetail : Screen("member_detail/{memberId}") {
         fun createRoute(id: Long) = "member_detail/$id"
     }
