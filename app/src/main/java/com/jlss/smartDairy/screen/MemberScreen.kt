@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.*
@@ -32,6 +33,7 @@ fun MemberScreen(
 ) {
     val members by vm.members.collectAsState()
     var name by remember { mutableStateOf("") }
+    val searchQuery by vm.searchQuery.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val memberToDelete = remember { mutableStateOf<Members?>(null) }
     val dateFmt = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
@@ -39,20 +41,26 @@ fun MemberScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Manage Members") },
-                actions = {
-                    Icon(Icons.Default.People, contentDescription = null)
-                }
+                title = { Text("Manage Members") }
             )
         }
-
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
+                .padding(5.dp)
                 .fillMaxSize()
         ) {
+            // 🔍 Search Field
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = vm::setSearch,
+                label = { Text("Search by Name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
             Text("Add New Member", style = MaterialTheme.typography.titleMedium)
             Row(
                 Modifier
@@ -109,6 +117,11 @@ fun MemberScreen(
                                 Text(
                                     "Joined on ${dateFmt.format(Date(m.dateOfJoin))}",
                                     style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    "Open ${m.name} diary",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
 

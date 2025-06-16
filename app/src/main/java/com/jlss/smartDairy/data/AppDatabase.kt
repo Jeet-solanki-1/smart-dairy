@@ -14,10 +14,10 @@ import com.jlss.smartDairy.data.model.*
         User::class,
         Members::class,
         Entry::class,
-        FatRate::class,
+        Rates::class,
         ListOfEntry::class
     ],
-    version = 5,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -28,7 +28,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
     abstract fun fatRateDao(): FatRateDao
     abstract fun listEntryDao(): ListEntryDao
-
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

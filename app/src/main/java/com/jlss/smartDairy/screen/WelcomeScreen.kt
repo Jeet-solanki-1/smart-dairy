@@ -146,14 +146,16 @@ fun WelcomeCard(page: WelcomePage) {
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = page.imageRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .height(180.dp)
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            )
+            page.imageRes?.let { painterResource(id = it) }?.let {
+                Image(
+                    painter = it,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .height(180.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                )
+            }
             Text(
                 text = page.title,
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -216,5 +218,5 @@ fun Footer(pagerState: PagerState, pageCount: Int, onFinish: () -> Unit) {
 data class WelcomePage(
     val title: String,
     val description: String,
-    val imageRes: Int
+    val imageRes: Int?= null
 )

@@ -73,8 +73,10 @@ class EntryListViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun deleteEntry(entry: ListOfEntry) = viewModelScope.launch {
-        AppDatabase.getDatabase(getApplication()).listEntryDao().delete(entry)
+        dao.delete(entry)
     }
+
+
 
 }
 

@@ -10,6 +10,17 @@ class Converters {
     private val listType = object : TypeToken<List<Entry>>() {}.type
 
     @TypeConverter
+    fun fromEntry(entry: Entry?): String? {
+        return gson.toJson(entry)
+    }
+
+    @TypeConverter
+    fun toEntry(entryJson: String?): Entry? {
+        if (entryJson == null) return null
+        val type = object : TypeToken<Entry>() {}.type
+        return gson.fromJson(entryJson, type)
+    }
+    @TypeConverter
     fun fromEntryList(value: List<Entry>?): String {
         // Room may pass null for a nullable List<Entry>? field,
         // so we serialize null → empty list JSON.

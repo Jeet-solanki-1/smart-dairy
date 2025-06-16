@@ -13,10 +13,9 @@ class AccountViewModel(application: Application) : AndroidViewModel(application)
 
     val user = userDao.getUser().asLiveData()
 
-    fun createUser(name: String, mobile: String, village: String) {
+    fun createUser(userName: String,name: String, mobile: String, village: String) {
         viewModelScope.launch {
-            userDao.insertUser(User(name = name, mobile = mobile, village = village))
-
+            userDao.insertUser(User(userName= userName,name = name, mobile = mobile, village = village))
 
         }
     }

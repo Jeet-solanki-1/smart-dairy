@@ -1,5 +1,7 @@
 package com.jlss.smartDairy.navigation
 
+import com.jlss.smartDairy.data.model.ListOfEntry
+
 /**
  * **Screen** - Represents the navigation destinations in the Mukesh dairy app.
  *
@@ -23,17 +25,25 @@ package com.jlss.smartDairy.navigation
  * - Ensure **scalability** by allowing easy addition of new screens.
  * - Avoid **string-based navigation errors** by using type-safe routes.
  */sealed class Screen(val route: String) {
+    object ProductionEntryScreen : Screen("production_entry_screen/{entryId}") {
+        fun createRoute(entryId: Long) = "production_entry_screen/$entryId"
+    }
 
+    object Settings : Screen("settings")
+    object SetRateScreen : Screen("set_rate_screen")
     object WelcomeScreen : Screen("welcome_screen")
     object ProfileScreen : Screen("profile_screen")
-    object UserGuideScreen : Screen("user_guide_screen")
     object AccountCreationScreen : Screen("account_creation_screen")
     object AppLockScreen : Screen("app_lock_screen")
 
     object MainScaffold : Screen("main_scaffold")
     object EntryViewScreen : Screen("entry_view_screen")
-    object HomeScreen : Screen("home_screen")
+    object EntryScreen : Screen("entry_screen")
+    object EntryListScreen : Screen("entries")
+    object MemberScreen : Screen("members")
+    object HomeScreen : Screen("home")
     object MemberDetail : Screen("member_detail/{memberId}") {
         fun createRoute(id: Long) = "member_detail/$id"
     }
+    object UserGuideScreen : Screen("user_guide")
 }

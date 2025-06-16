@@ -1,5 +1,6 @@
 package com.jlss.smartDairy.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,26 @@ import com.jlss.smartDairy.viewmodel.SharedViewModel
 import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import com.jlss.smartDairy.component.ConfirmDeleteDialog
+
+import com.jlss.smartDairy.viewmodel.FilterType
+
+import java.util.*
+
+
+
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.ui.Alignment
+import com.jlss.smartDairy.data.model.ListOfEntry
+
 /**
  * 📄 EntryListScreen.kt — Smart Dairy App
  * ----------------------------------------------------------
@@ -120,72 +141,7 @@ import java.util.Locale
 
  */
 
-//@Composable
-//fun EntryListScreen(
-//    vm: EntryListViewModel = viewModel(),
-//    sharedVm: SharedViewModel,
-//    navController: NavController
-//) {
-//    val entries by vm.allEntries.collectAsState()
-//
-//    // Pre-create your formatter once
-//    val formatter = remember {
-//        SimpleDateFormat("d MMM yyyy | h:mm a", Locale.getDefault())
-//    }
-//
-//    Column(Modifier.fillMaxSize().padding(16.dp)) {
-//        Text("All Entries", style = MaterialTheme.typography.headlineSmall)
-//        Spacer(Modifier.height(8.dp))
-//
-//        if (entries.isEmpty()) {
-//            Text("No saved entry-lists yet.")
-//        }
-//
-//        LazyColumn {
-//            items(entries) { item ->
-//                val color = if (item.isNight)
-//                    MaterialTheme.colorScheme.primary
-//                else
-//                    MaterialTheme.colorScheme.secondary
-//
-//                // Format the timestamp + append night/day tag
-//                val formatted = formatter.format(Date(item.timestamp)) +
-//                        " | ${if (item.isNight) "Night" else "Morning"}"
-//
-//                Button(
-//                    onClick = {
-//                        sharedVm.selectedEntries = item.listOfEntry
-//                        navController.navigate(Screen.EntryViewScreen.route)
-//                    },
-//                    colors = ButtonDefaults.buttonColors(containerColor = color),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 4.dp)
-//                ) {
-//                    Text(formatted)
-//                }
-//            }
-//        }
-//    }
-//}
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.List
-
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import com.jlss.smartDairy.component.ConfirmDeleteDialog
-
-import com.jlss.smartDairy.viewmodel.FilterType
-
-import java.util.*
-
-
-
-import androidx.compose.material.icons.filled.FilterList
-import com.jlss.smartDairy.data.model.ListOfEntry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,9 +157,10 @@ fun EntryListScreen(
     var showFilterDialog by remember { mutableStateOf(false) }
     var deleteCandidate by remember { mutableStateOf<ListOfEntry?>(null) }
 
-    val formatter = remember {
+  val formatter =   remember(key1 = Locale.getDefault()) {
         SimpleDateFormat("EEE, d MMM yyyy | h:mm a", Locale.getDefault())
     }
+
 
     Column(Modifier
         .fillMaxSize()
@@ -238,10 +195,17 @@ fun EntryListScreen(
                     EntryCard(
                         entryGroup = entry,
                         formatter = formatter,
-                        onOpen = {
+                        onOpen = {// THIS IS on COllection entries
                             sharedVm.selectedEntries = entry.listOfEntry
                             navController.navigate(Screen.EntryViewScreen.route)
                         },
+                         onProduction = {
+                             sharedVm.selectedEntries = entry.listOfEntry
+                             // make it arguemtn passable and pass entrygorup
+                             navController.navigate(Screen.ProductionEntryScreen.createRoute(entry.id))
+                             // navigate to production entry  screen and if there were no entries then show enter entries or if already have then show entry block check by entry of factory entry
+                         } ,
+                            // here one more will come just below the two entries (collection entries , production entries ) which will open a new screen of report of all data with user name and can be printable later on
                         onDelete = { deleteCandidate = entry }
                     )
                 }
@@ -262,16 +226,21 @@ fun EntryListScreen(
             text = {
                 Column {
                     FilterType.values().forEach { filter ->
-                        Row(Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { vm.setFilter(filter) }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             RadioButton(
                                 selected = selectedFilter == filter,
-                                onClick = { vm.setFilter(filter) }
+                                onClick = null // handle at Row level
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(filter.name.lowercase().replaceFirstChar { it.uppercase() })
                         }
+
                     }
                 }
             }
@@ -296,13 +265,17 @@ private fun EntryCard(
     entryGroup: ListOfEntry,
     formatter: SimpleDateFormat,
     onOpen: () -> Unit,
+    onProduction: () -> Unit,
     onDelete: () -> Unit
 ) {
     val shiftText = if (entryGroup.isNight) "Night" else "Morning"
     val label = formatter.format(Date(entryGroup.timestamp))
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (entryGroup.isNight)
                 MaterialTheme.colorScheme.secondaryContainer
@@ -323,12 +296,26 @@ private fun EntryCard(
                 }
             }
             Spacer(Modifier.height(8.dp))
-            Button(
-                onClick = onOpen,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Open Entry List")
+                Button(
+                    onClick = onOpen,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Collection Entries")
+                }
+
+                Button(
+                    onClick = onProduction,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Production Report")
+                }
             }
+
+
         }
     }
 }

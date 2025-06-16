@@ -38,69 +38,62 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.filled.Add
 
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.ui.platform.LocalContext
-import com.jlss.smartDairy.data.AppDatabase
+import androidx.compose.ui.Alignment
 import com.jlss.smartDairy.navigation.Screen
 
+import com.jlss.smartDairy.viewmodel.UserViewModel
 
+
+import com.jlss.smartDairy.viewmodel.*
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryScreen(
     vm: EntryViewModel = viewModel(),
     memberVm: MemberViewModel = viewModel(),
+    userVm: UserViewModel = viewModel(),
     onSaved: () -> Unit,
     navController: NavController
 ) {
+    // ViewModel state
     val members by memberVm.members.collectAsState()
+    val user by userVm.user.collectAsState(initial = null)
     val rows by vm.rows.collectAsState()
     val totalMilk by vm.totalMilk.collectAsState()
     val avgFat by vm.avgFat.collectAsState()
     val totalAmt by vm.totalAmount.collectAsState()
-    var showFatRateDialog by remember { mutableStateOf(false) }
-    var showSaveConfirm by remember { mutableStateOf(false) }
+    val wasInitByMembers by vm.wasInitializedByMembers.collectAsState()
+    val showMissingRate by vm.showMissingFatRate.collectAsState()
+
+    // UI flags
     var showNoMembersDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    var showSaveConfirm by remember { mutableStateOf(false) }
 
-    val rate = mutableStateOf(0.0)
+    // Logic
+    val hasLoadedMembers = rows.isNotEmpty()
+    val shouldShowLoadButton = !wasInitByMembers
 
-
-    LaunchedEffect(Unit) {
-          vm.refreshFatRate()
-     if (vm.ratePerFat.value ==null){
-         showFatRateDialog = true
-     }
-
-    }
-    if (showFatRateDialog) {
-        // Show dialog or directly navigate to HomeScreen
-        AlertDialog(
-            onDismissRequest = { showFatRateDialog = false },
-            title = { Text("Fat Rate not Set!!") },
-            text = { Text("Set fat rate first from home screen to calculate amounts.") },
-            confirmButton = { TextButton(onClick = {
-                navController.navigate(Screen.HomeScreen.route) // replace with actual route
-            }
-            ) { Text("Go") }
-            })
-    }
-
+    // ---- Dialogs ----
     if (showNoMembersDialog) {
         AlertDialog(
             onDismissRequest = { showNoMembersDialog = false },
             title = { Text("No Members Found") },
-            text = { Text("Please add members first. The members section is needed to map entries correctly.") },
-            confirmButton = { TextButton(onClick = {
-                showNoMembersDialog = false
-
-            }
-            ) { Text("OK") }
+            text = { Text("Please add members first.") },
+            confirmButton = {
+                TextButton(onClick = { showNoMembersDialog = false }) {
+                    Text("OK")
+                }
             }
         )
     }
+
     if (showSaveConfirm) {
         AlertDialog(
             onDismissRequest = { showSaveConfirm = false },
-            title = { Text("Save") },
-            text = { Text("Always make sure you filled all entries of the shift to prevent data loss.") },
+            title = { Text("Save Entries") },
+            text = { Text("Make sure all rows are properly filled before saving.") },
             confirmButton = {
                 TextButton(onClick = {
                     showSaveConfirm = false
@@ -113,77 +106,114 @@ fun EntryScreen(
         )
     }
 
-
-    if (showFatRateDialog) {
+    if (showMissingRate) {
         AlertDialog(
-            onDismissRequest = { showFatRateDialog = false },
-            title = { Text("Fat Rate Not Set") },
-            text = { Text("Go to home screen and set current fat rate!") },
-            confirmButton = { TextButton(onClick = { navController.navigate(Screen.HomeScreen.route) }) { Text("Ok") } }
+            onDismissRequest = { },
+            title = { Text("Missing Fat Rate") },
+            text = { Text("Please set the fat rate before proceeding.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.setInitializedByMembersFalse()
+                    navController.navigate(Screen.MainScaffold.route)
+                }) {
+                    Text("OK")
+                }
+            }
         )
     }
 
+    // ---- UI Scaffold ----
     Scaffold(
         bottomBar = {
-            Column(Modifier.fillMaxWidth().padding(8.dp)) {
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+            if (hasLoadedMembers) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text("Milk: $totalMilk", style = MaterialTheme.typography.bodyMedium)
-                    Text("Fat: ${"%.2f".format(avgFat)}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Pay: ₹${"%.2f".format(totalAmt)}", style = MaterialTheme.typography.bodyMedium)
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    IconButton(onClick = { vm.addEmptyRow() }) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Milk: $totalMilk", style = MaterialTheme.typography.bodyMedium)
+                        Text("Fat: ${"%.2f".format(avgFat)}", style = MaterialTheme.typography.bodyMedium)
+                        Text("Pay: ₹${"%.2f".format(totalAmt)}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    IconButton(
+                        onClick = { vm.addEmptyRow() },
+                        Modifier.align(Alignment.CenterHorizontally)
+                    ) {
                         Icon(Icons.Default.Add, contentDescription = "Add Row")
                     }
-                }
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        showSaveConfirm = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("💾 Save Entries")
+                    Spacer(Modifier.height(20.dp))
+                    Button(
+                        onClick = { showSaveConfirm = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("💾 Save Entries")
+                    }
                 }
             }
         }
     ) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
-            LazyColumn(Modifier.weight(1f)) {
-                item {
-                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                        listOf("#", "Name", "Milk", "Fat", "Amt").forEachIndexed { i, header ->
-                            val weight = if (i == 0) 0.5f else 1f
-                            Text(header, Modifier.weight(weight), style = MaterialTheme.typography.labelLarge)
+        Column(
+            Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            if (shouldShowLoadButton) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(onClick = {
+                        if (members.isEmpty()) {
+                            showNoMembersDialog = true
+                        } else {
+                            vm.initRowsFromMembers(members)
                         }
+                    }) {
+                        Text("📥 Load Members")
                     }
-                    Divider()
                 }
-                itemsIndexed(rows) { idx, row ->
-                    EntryRow(index = idx, row = row, onRowChange = { index, changedRow ->
-                        vm.updateRow(index) {
-                            copy(
-                                name = changedRow.name,
-                                milkQty = changedRow.milkQty,
-                                fatRate = changedRow.fatRate
-                            )
+            } else {
+                LazyColumn(Modifier.weight(1f)) {
+                    item {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            listOf("#", "Name", "Milk", "Fat", "Amt").forEachIndexed { i, header ->
+                                Text(
+                                    header,
+                                    Modifier.weight(if (i == 0) 0.5f else 1f),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
                         }
-                    })
-                    Divider()
+                        Divider()
+                    }
+                    itemsIndexed(rows) { idx, row ->
+                        EntryRow(idx, row) { index, changed ->
+                            vm.updateRow(index) {
+                                copy(
+                                    name = changed.name,
+                                    milkQty = changed.milkQty,
+                                    fatRate = changed.fatRate
+                                )
+                            }
+                        }
+                        Divider()
+                    }
                 }
             }
         }
     }
 }
-
-
 
 @Composable
 fun EntryRow(
@@ -192,42 +222,30 @@ fun EntryRow(
     onRowChange: (Int, EntryRowState) -> Unit
 ) {
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        // Serial #
         Text("${row.serialNo}", Modifier.weight(0.25f), style = MaterialTheme.typography.bodySmall)
 
-        // Name
-        // Name — increased width
         OutlinedTextField(
-            value = row.name,
-            onValueChange = { newName ->
-                onRowChange(index, row.copy(name = newName))
-            },
-            modifier = Modifier.weight(1.8f),
+            value       = row.name,
+            onValueChange = { onRowChange(index, row.copy(name = it)) },
+            Modifier.weight(1.8f),
             singleLine = true
         )
 
-
-        // Milk Qty
         OutlinedTextField(
-            value = row.milkQty,
-            onValueChange = { newQty ->
-                onRowChange(index, row.copy(milkQty = newQty))
-            },
-            modifier = Modifier.weight(1f),
-            singleLine = true
+            value       = row.milkQty,
+            onValueChange = { onRowChange(index, row.copy(milkQty = it)) },
+            Modifier.weight(1f),
+            singleLine   = true
         )
 
-        // Fat Rate
         OutlinedTextField(
-            value = row.fatRate,
-            onValueChange = { newFat ->
-                onRowChange(index, row.copy(fatRate = newFat))
-            },
-            modifier = Modifier.weight(1f),
-            singleLine = true
+            value       = row.fatRate,
+            onValueChange = { onRowChange(index, row.copy(fatRate = it)) },
+            Modifier.weight(1f),
+            singleLine   = true
         )
 
-        Text("%.3f".format(row.amount), Modifier.weight(1.1f)) // In 5th column
+        Text("%.2f".format(row.amount), Modifier.weight(1.1f))
     }
 }
 

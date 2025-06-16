@@ -28,6 +28,7 @@ fun ProfileScreen(
     val pinVm: AppLockViewModel = viewModel(factory = factory)
     val user by vm.user.collectAsState(initial = null)
     val pin by pinVm.pin.collectAsState(initial = null)
+    var yourName by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var mobile by remember { mutableStateOf("") }
     var village by remember { mutableStateOf("") }
@@ -37,6 +38,7 @@ fun ProfileScreen(
 
     LaunchedEffect(user) {
         user?.let {
+            yourName = it.userName
             name = it.name
             mobile = it.mobile
             village = it.village
@@ -64,9 +66,15 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             OutlinedTextField(
+                value = yourName,
+                onValueChange = { yourName = it },
+                label = { Text("Your Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") },
+                label = { Text("Dairy Name") },
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
@@ -93,7 +101,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    vm.saveUser(name, mobile, village)
+                    vm.saveUser(yourName,name, mobile, village)
                     pin?.let { pinVm.setNewPin(pinVar) }
                     navController.popBackStack()
                 },

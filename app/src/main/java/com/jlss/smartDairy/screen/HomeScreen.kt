@@ -1,30 +1,47 @@
 package com.jlss.smartDairy.screen
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Send
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jlss.smartDairy.viewmodel.HomeViewModel
+import com.jlss.smartDairy.component.MenuCard
 import com.jlss.smartDairy.viewmodel.UserViewModel
-import java.io.File
+import androidx.compose.foundation.background
+
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.NoteAdd
+
+import androidx.compose.ui.graphics.Brush
+
+import androidx.navigation.NavController
+import com.jlss.smartDairy.R
+
+import com.google.accompanist.pager.*
+import com.jlss.smartDairy.navigation.Screen
+
+import java.time.LocalTime
+
+import kotlinx.coroutines.delay
+
+fun getTimeGreeting(): String {
+    val hour = LocalTime.now().hour
+    return when (hour) {
+        in 5..11 -> "Good Morning"
+        in 12..16 -> "Good Afternoon"
+        in 17..20 -> "Good Evening"
+        else -> "Good Night"
+    }
+}
 
 /**
  * 📄 HomeScreen.kt — Smart Dairy App
@@ -129,279 +146,152 @@ import java.io.File
 
  */
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(vm: HomeViewModel = viewModel(), userVm: UserViewModel = viewModel()) {
-    val context = LocalContext.current
-    val rate by vm.rate.collectAsState()
+fun HomeScreen(
+    navController: NavController,
+    userVm: UserViewModel = viewModel()
+) {
     val user by userVm.user.collectAsState(initial = null)
-    val userName = user?.name
-    var input by remember { mutableStateOf(rate?.toString() ?: "") }
-    var showExportDialog by remember { mutableStateOf(false) }
-    var exportFileName by remember { mutableStateOf("") }
+    val userName = user?.name ?: "Guest"
+    val greeting = getTimeGreeting()
+    val pagerState = rememberPagerState(initialPage = 0)
+    val coroutineScope = rememberCoroutineScope()
 
-    val fileOptions = remember { mutableStateListOf<File>() }
-    var selectedFile by remember { mutableStateOf<File?>(null) }
+// Auto-scroll every 3 seconds
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            fileOptions.clear()
-            fileOptions.addAll(vm.getAvailableJsonFilesFromPublicFolders(context))
-        } else {
-            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+
+    val pages = listOf(
+        // 1️⃣ Initial setup: members & fat rate
+        WelcomePage(
+            title       = "Start by Adding Members & Fat Rates",
+            description = """
+            1. Tap “Load Members” to pull in—or manually Add—your dairy members.
+            2. Go to HomeScreen  → Set Rates, and enter your Buying‑Fat and Factory‑Fat rates and milk selling rates.
+            3. Only after both members and rates are in place you can record milk entries accurately.
+        """.trimIndent(),
+            imageRes    = null
+        ),
+
+        // 2️⃣ Daily usage: record & backup
+        WelcomePage(
+            title       = "Record Daily Collections & Print Reports",
+            description = """
+            • Every day, enter each member’s milk & fat % in the table.
+            • Tap 💾 Save to persist data offline.
+            • Use the “Print Report” button to generate & share today’s collection—so even if the app is deleted, you have a PDF backup.
+        """.trimIndent(),
+            imageRes    = null
+        ),
+
+        // 3️⃣ Data portability: export / import
+        WelcomePage(
+            title       = "Export / Import to Secure & Share Data",
+            description = """
+            • Tap Export to dump all your members + entries into a Text or Json file.
+            • Store it safely or share with colleagues.
+            • Import that file on any device to restore everything—no manual re‑entry needed.
+        """.trimIndent(),
+            imageRes    = null
+        ),
+
+        // 4️⃣ Upcoming features preview
+        WelcomePage(
+            title       = "New Features Coming Soon!",
+            description = """
+            • Voice‑based data entry: speak names, milks & fats in one go.
+            • Scheduled weekly/monthly summary reports.
+            • Optional server sync: back up your data in the cloud.
+            • And many more AI‑powered insights for your dairy business.
+        """.trimIndent(),
+            imageRes    = null
+        ),
+
+        // 5️⃣ Community & follow
+        WelcomePage(
+            title       = "Follow JLSS—Join the Uniqueness",
+            description = """
+            💖 Stay updated: Follow JLSS .
+            🌐 Join our community of digital transforming India’s capital .
+        """.trimIndent(),
+            imageRes    = null
+        )
+    )
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(3000)
+            val nextPage = (pagerState.currentPage + 1) % pages.size
+            pagerState.animateScrollToPage(nextPage)
         }
     }
 
-    val pickTextLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? -> uri?.let { vm.importEntriesFromUri(context, it) } }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        item {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-
-                Text("📋$userName Dairy ", style = MaterialTheme.typography.headlineMedium)
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("💰 Current Rate", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            text = "${rate ?: "--"} ₹/fat",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        OutlinedTextField(
-                            value = input,
-                            onValueChange = { input = it },
-                            label = { Text("Update Rate (₹/fat)") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 12.dp)
-                        )
-
-                        Button(
-                            onClick = {
-                                input.toDoubleOrNull()?.let {
-                                    vm.setRate(it)
-                                    Toast.makeText(
-                                        context,
-                                        "Rate updated to ₹$it/fat",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            },
-                            modifier = Modifier
-                                .align(Alignment.End)
-                                .padding(top = 8.dp)
-                        ) {
-                            Text("Save Rate")
-                        }
-                    }
-                }
-
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("📤 Export Data", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            "Create a backup of all your entries and members.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
-                        )
-
-                        Button(
-                            onClick = { showExportDialog = true },
-                            modifier = Modifier.padding(top = 12.dp)
-                        ) {
-                            Icon(Icons.Default.Send, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Export")
-                        }
-                    }
-                }
-
-                if (showExportDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showExportDialog = false },
-                        confirmButton = {
-                            Column {
-                                Button(onClick = {
-                                    if (exportFileName.isNotBlank()) {
-                                        vm.exportAllData(exportFileName)
-                                        Toast.makeText(
-                                            context,
-                                            "Exported to $exportFileName.txt",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        showExportDialog = false
-                                    }
-                                }) { Text("Export All Data") }
-
-                                Spacer(Modifier.height(8.dp))
-
-                                Button(onClick = {
-                                    if (exportFileName.isNotBlank()) {
-                                        vm.exportOnlyMembers(exportFileName)
-                                        Toast.makeText(
-                                            context,
-                                            "Exported only members",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        showExportDialog = false
-                                    }
-                                }) { Text("Export Only Members") }
-
-                                TextButton(onClick = { showExportDialog = false }) {
-                                    Text("Cancel")
-                                }
-                            }
-                        },
-                        title = { Text("Export as .txt file") },
-                        text = {
-                            OutlinedTextField(
-                                value = exportFileName,
-                                onValueChange = { exportFileName = it },
-                                label = { Text("Enter File Name") },
-                                singleLine = true
-                            )
-                        }
+    Scaffold(
+        containerColor = Color.Transparent
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFFE8F5E9), Color(0xFFB2DFDB), Color(0xFF80CBC4))
                     )
-                }
+                ),
+            verticalArrangement = Arrangement.Top
+        ) {
+            /** Greeting + Horizontal Notice Board **/
+            Text(
+                text = "👋 $greeting, $userName!",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "📥 Import from File Picker",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(
-                            "Load previous entries from exported .txt files.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Button(
-                            onClick = { pickTextLauncher.launch(arrayOf("text/plain")) },
-                            modifier = Modifier.padding(top = 12.dp)
-                        ) {
-                            Icon(Icons.Default.Build, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Pick TXT File")
-                        }
-                    }
-                }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("📂 Import from Device", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            "Auto-scan and select saved .txt files from your device.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Button(
-                            onClick = {
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU &&
-                                    ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.READ_EXTERNAL_STORAGE
-                                    ) != PackageManager.PERMISSION_GRANTED
-                                ) {
-                                    permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                                } else {
-                                    fileOptions.clear()
-                                    fileOptions.addAll(
-                                        vm.getAvailableJsonFilesFromPublicFolders(
-                                            context
-                                        )
-                                    )
-                                }
-                            },
-                            modifier = Modifier.padding(top = 12.dp)
-                        ) {
-                            Text("Scan for Files")
-                        }
-
-                        if (fileOptions.isNotEmpty()) {
-                            var expanded by remember { mutableStateOf(false) }
-
-                            ExposedDropdownMenuBox(
-                                expanded = expanded,
-                                onExpandedChange = { expanded = !expanded },
-                                modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
-                            ) {
-                                OutlinedTextField(
-                                    readOnly = true,
-                                    value = selectedFile?.name ?: "Choose file to import",
-                                    onValueChange = {},
-                                    label = { Text("Saved Files") },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
-                                    },
-                                    modifier = Modifier.menuAnchor()
-                                )
-
-                                ExposedDropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-                                    fileOptions.forEach { file ->
-                                        DropdownMenuItem(
-                                            text = { Text(file.name) },
-                                            onClick = {
-                                                selectedFile = file
-                                                expanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-                            selectedFile?.let { file ->
-                                Button(
-                                    onClick = {
-                                        vm.importSmartJson(file) {
-                                            Toast.makeText(
-                                                context,
-                                                "File is empty or invalid",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                        Toast.makeText(
-                                            context,
-                                            "Imported from ${file.name}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    },
-                                    modifier = Modifier
-                                        .padding(top = 8.dp)
-                                        .fillMaxWidth()
-                                ) {
-                                    Text("Import This File")
-                                }
-                            }
-                        }
-                    }
-                }
+            HorizontalPager(
+                state = pagerState,
+                count = pages.size,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp)
+            ) { index ->
+                WelcomeCard(pages[index])
             }
+
+
+            HorizontalPagerIndicator(
+                pagerState = pagerState,
+                activeColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp)
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            /** Action Menu Cards **/
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                MenuCard(
+                    title = "Collect Milk 🐄",
+                    description = "Tap here to enter milk & fat entries. Quick entry with voice & camera support!",
+                    icon = Icons.Default.NoteAdd,
+                    onClick = { navController.navigate(Screen.EntryScreen.route) }
+                )
+
+                MenuCard(
+                    title = "Set Rates 💰",
+                    description = "Set your fat rate, factory selling rate & milk price for payment accuracy.",
+                    icon = Icons.Default.MonetizationOn,
+                    onClick = { navController.navigate(Screen.SetRateScreen.route) }
+                )
+            }
+
+
         }
     }
 }
+
+

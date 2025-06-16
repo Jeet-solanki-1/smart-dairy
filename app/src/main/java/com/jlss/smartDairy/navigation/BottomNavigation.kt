@@ -1,10 +1,20 @@
 package com.jlss.smartDairy.navigation
 
-
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
+
+import androidx.compose.ui.unit.sp
+
+
+import com.jlss.smartDairy.screen.*
+
+
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,6 +30,7 @@ import com.jlss.smartDairy.screen.EntryListScreen
 import com.jlss.smartDairy.screen.HomeScreen
 import com.jlss.smartDairy.screen.EntryScreen
 import com.jlss.smartDairy.screen.MemberScreen
+import com.jlss.smartDairy.screen.SettingsScreen
 import com.jlss.smartDairy.viewmodel.SharedViewModel
 
 
@@ -57,42 +68,41 @@ fun MainScaffold(
                     icon = { Icon(Icons.Default.Home, contentDescription = "home") },
                     label = { Text("Home") }
                 )
+
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    icon = { Icon(Icons.Default.Edit, contentDescription = "add") },
-                    label = { Text("Add") }
+                    icon = { Icon(Icons.Default.List, contentDescription = "list") },
+                    label = { Text("All Entries") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    icon = { Icon(Icons.Default.List, contentDescription = "list") },
-                    label = { Text("All") }
+                    icon = { Icon(Icons.Default.Person, contentDescription = "members") },
+                    label = { Text("Members") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "members") },
-                    label = { Text("Members") }
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") }
                 )
             }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (selectedTab) {
-                0 -> HomeScreen()
-                1 -> EntryScreen(onSaved = {
-                    // Example: show a Toast or navigate
-                    Toast.makeText(context, "Entry Saved!", Toast.LENGTH_SHORT).show()
-                },
-                    navController = navController)
-                2 -> EntryListScreen(
+                0 -> HomeScreen(navController)
+
+                1 -> EntryListScreen(
                     navController = navController,
                     sharedVm = sharedVm
                 )
-                3 -> MemberScreen(
+                2 -> MemberScreen(
                     navController = navController
                 )
+
+                3 -> SettingsScreen()
 
             }
         }

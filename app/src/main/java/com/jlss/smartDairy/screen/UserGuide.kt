@@ -15,16 +15,12 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserGuideScreen(onBack: () -> Unit) {
+fun UserGuideScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("User Guide") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+
             )
         }
     ) { padding ->

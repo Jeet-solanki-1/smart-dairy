@@ -4,11 +4,10 @@ package com.jlss.smartDairy.data.dao
 import androidx.room.*
 import com.jlss.smartDairy.data.model.AppLockEntity
 import com.jlss.smartDairy.data.model.Entry
-import com.jlss.smartDairy.data.model.FatRate
+import com.jlss.smartDairy.data.model.Rates
 import com.jlss.smartDairy.data.model.ListOfEntry
 import com.jlss.smartDairy.data.model.User
 import com.jlss.smartDairy.data.model.Members
-
 
 
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +23,6 @@ interface UserDao {
     @Update
     suspend fun updateUser(user: User)
 }
-
 
 
 @Dao
@@ -69,18 +67,13 @@ interface MemberDao {
 
 @Dao
 interface FatRateDao {
-    /**
-     * Inserts or replaces the single FatRate row (id=0).
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun set(rate: FatRate)
+    @Query("SELECT * FROM rate LIMIT 1")
+    fun get(): Flow<Rates?>
 
-    /**
-     * Returns the single FatRate record as a Flow, or null if never set.
-     */
-    @Query("SELECT * FROM fat_rate WHERE id = 0")
-    fun get(): Flow<FatRate?>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun set(rates: Rates)
 }
+
 
 
 @Dao
@@ -111,7 +104,8 @@ interface ListEntryDao {
 
     @Query("SELECT * FROM list_of_entry WHERE id = :id")
     suspend fun getById(id: Long): ListOfEntry?
-
+    @Update
+    suspend fun update(list: ListOfEntry)
     @Delete
     suspend fun delete(list: ListOfEntry) // ✅ Add this
     @Insert

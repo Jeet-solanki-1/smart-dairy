@@ -21,6 +21,9 @@ fun AccountCreationScreen(
     viewModel: AccountViewModel = viewModel(),
     viewModelLock: AppLockViewModel
 ) {
+    var userName by remember {
+        mutableStateOf("")
+    }
     var name by remember { mutableStateOf("") }
     var mobile by remember { mutableStateOf("") }
     var village by remember { mutableStateOf("") }
@@ -60,9 +63,15 @@ fun AccountCreationScreen(
                     )
 
                     OutlinedTextField(
+                        value = userName,
+                        onValueChange = { userName = it },
+                        label = { Text("Your Name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
-                        label = { Text("Name") },
+                        label = { Text("Dairy name") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -89,7 +98,7 @@ fun AccountCreationScreen(
 
                     Button(
                         onClick = {
-                            viewModel.createUser(name, mobile, village)
+                            viewModel.createUser(userName,name, mobile, village)
                             viewModelLock.setNewPin(pin)
                             onAccountCreated()
                         },

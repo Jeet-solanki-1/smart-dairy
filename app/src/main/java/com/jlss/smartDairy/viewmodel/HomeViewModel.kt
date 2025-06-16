@@ -14,8 +14,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jlss.smartDairy.data.AppDatabase
 import com.jlss.smartDairy.data.model.DataExportModel
-import com.jlss.smartDairy.data.model.Entry
-import com.jlss.smartDairy.data.model.FatRate
+import com.jlss.smartDairy.data.model.Rates
 import com.jlss.smartDairy.data.model.ListOfEntry
 import com.jlss.smartDairy.data.model.Members
 import kotlinx.coroutines.Dispatchers
@@ -25,35 +24,70 @@ import java.io.File
 import java.io.FileReader
 import java.io.InputStreamReader
 
+
+
+
+
+
+
 class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private val ctx = app.applicationContext
     private val db = AppDatabase.getDatabase(ctx)
     private val fatDao = db.fatRateDao()
-    private val listOfEntry = db.listEntryDao()
+    private val listOfEntryDao = db.listEntryDao()
     private val memberDao = db.memberDao()
 
     val rate: StateFlow<Double?> = fatDao.get()
         .map { it?.ratePerFat }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    fun setRate(newRate: Double) = viewModelScope.launch {
-        fatDao.set(FatRate(id = 0, ratePerFat = newRate))
+    data class RateData(
+        val buyingRate: Double = 0.0,
+        val factoryRate: Double = 0.0,
+        val milkRate: Double = 0.0
+    )
+
+    private val _rateState: MutableStateFlow<Rates?> = MutableStateFlow(null)
+    val rateState: StateFlow<Rates?> = _rateState
+
+    private val _allRates = MutableStateFlow(RateData())
+    val allRates: StateFlow<RateData> = _allRates
+
+    init {
+        viewModelScope.launch {
+            fatDao.get().collect { entity ->
+                // keep your existing rateState
+                _rateState.value = entity
+                // now update allRates so UI fields show persisted DB values
+                entity?.let {
+                    _allRates.value = RateData(
+                        buyingRate  = it.ratePerFat,
+                        factoryRate = it.sellingFatRate,
+                        milkRate    = it.yourMilkRates
+                    )
+                }
+            }
+        }
+    }
+
+
+    suspend fun setAllRates(data: RateData) {
+        _allRates.value = data
+        fatDao.set(Rates(0, data.buyingRate, data.factoryRate, data.milkRate))
     }
 
     fun exportAllData(fileName: String) = viewModelScope.launch(Dispatchers.IO) {
         try {
-            val entries = listOfEntry.getAllOnce()
+            val entries = listOfEntryDao.getAllOnce()
             val members = memberDao.getAllOnce()
             val exportModel = DataExportModel(entries = entries, members = members)
             val json = Gson().toJson(exportModel)
-            val file = File(ctx.getExternalFilesDir(null), "$fileName.txt") // instead of .shih
-
+            val file = File(ctx.getExternalFilesDir(null), "$fileName.txt")
             file.writeText(json)
 
             val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", file)
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
@@ -70,7 +104,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         try {
             val members = memberDao.getAllOnce()
             val json = Gson().toJson(members)
-            val file = File(ctx.getExternalFilesDir(null), "$fileName.txt") // instead of .shih
+            val file = File(ctx.getExternalFilesDir(null), "$fileName.txt")
             file.writeText(json)
 
             val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", file)
@@ -212,7 +246,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
         try {
             entries.forEach { listEntry ->
-                db.listEntryDao().insert(listEntry)
+                listOfEntryDao.insert(listEntry)
 
                 listEntry.listOfEntry.forEach { entry ->
                     val member = memberDao.findByName(entry.name)
