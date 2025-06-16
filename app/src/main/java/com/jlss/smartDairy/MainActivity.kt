@@ -34,12 +34,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MukeshDairyTheme(dynamicColor = false) {
+            MukeshDairyTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Request permissions on launch
+                    MukeshDairyApp()
+
+
+            // Request permissions on launch
                     RequestAudioPermissionIfNeeded()
                     RequestStoragePermissionsIfNeeded()
 

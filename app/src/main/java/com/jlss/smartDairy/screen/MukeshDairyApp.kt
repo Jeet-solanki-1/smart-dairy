@@ -15,5 +15,6 @@ fun MukeshDairyApp() {
     // and in btw footer and middle card slides , a button to start whihc will lead the user to go in set up profile screen,
     // so for this all we need to use statders things and make it grreat. use what ever we can use so that we can learn too by builind this welcome screen once this made then i am also able to made aps other scrrens.
     AppNavigation()
+
     // i think we also need bottom or top navigations bar, logic here after the user proced to main app means after welocme afate raccount createin.
 }
